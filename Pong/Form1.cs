@@ -34,7 +34,7 @@ namespace Pong
         SoundPlayer collisionSound = new SoundPlayer(Properties.Resources.collision);
 
         //determines whether a key is being pressed or not
-        Boolean aKeyDown, zKeyDown, jKeyDown, mKeyDown;
+        Boolean wKeyDown, sKeyDown, upKeyDown, downKeyDown;
 
         // check to see if a new game can be started
         Boolean newGameOk = true;
@@ -48,6 +48,8 @@ namespace Pong
         //paddle speeds and rectangles
         const int PADDLE_SPEED = 4;
         int p1X, p1Y, p2X, p2Y, pHeight, pWidth;
+
+
 
         //player and game scores
         int player1Score = 0;
@@ -67,26 +69,25 @@ namespace Pong
             //check to see if a key is pressed and set is KeyDown value to true if it has
             switch (e.KeyCode)
             {
-                case Keys.A:
-                    aKeyDown = true;
+                case Keys.W:
+                    wKeyDown = true;
                     break;
-                case Keys.Z:
-                    zKeyDown = true;
+                case Keys.S:
+                    sKeyDown = true;
                     break;
-                case Keys.J:
-                    jKeyDown = true;
+                case Keys.Up:
+                    upKeyDown = true;
                     break;
-                case Keys.M:
-                    mKeyDown = true;
+                case Keys.Down:
+                    downKeyDown = true;
                     break;
-                case Keys.Y:
                 case Keys.Space:
                     if (newGameOk)
                     {
                         SetParameters();
                     }
                     break;
-                case Keys.N:
+                case Keys.Escape:
                     if (newGameOk)
                     {
                         Close();
@@ -94,24 +95,24 @@ namespace Pong
                     break;
             }
         }
-        
+
         // -- YOU DO NOT NEED TO MAKE CHANGES TO THIS METHOD
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
             //check to see if a key has been released and set its KeyDown value to false if it has
             switch (e.KeyCode)
             {
-                case Keys.A:
-                    aKeyDown = false;
+                case Keys.W:
+                    wKeyDown = false;
                     break;
-                case Keys.Z:
-                    zKeyDown = false;
+                case Keys.S:
+                    sKeyDown = false;
                     break;
-                case Keys.J:
-                    jKeyDown = false;
+                case Keys.Up:
+                    upKeyDown = false;
                     break;
-                case Keys.M:
-                    mKeyDown = false;
+                case Keys.Down:
+                    downKeyDown = false;
                     break;
             }
         }
@@ -144,8 +145,15 @@ namespace Pong
             p2Y = this.Height / 2 - pHeight / 2;
 
             // TODO set Width and Height of ball
+            ballSize = 7;
+
+
             // TODO set starting X position for ball to middle of screen, (use this.Width and ball.Width)
+            ballX = this.Width / 2 - ballSize;
             // TODO set starting Y position for ball to middle of screen, (use this.Height and ball.Height)
+            ballY = this.Height / 2 - ballSize;
+            Refresh();
+            Thread.Sleep(1000);
 
         }
 
@@ -158,48 +166,51 @@ namespace Pong
             #region update ball position
 
             // TODO create code to move ball either left or right based on ballMoveRight and using BALL_SPEED
-
+            if (ballMoveRight) { ballX += BALL_SPEED; }
+            else { ballX -= BALL_SPEED; }
+            
             // TODO create code move ball either down or up based on ballMoveDown and using BALL_SPEED
-
+            if (ballMoveDown) { ballY += BALL_SPEED; }
+            else { ballY -= BALL_SPEED; }
             #endregion
 
             #region update paddle positions
 
-            if (aKeyDown == true && p1Y > 0)
-            {
-                // TODO create code to move player 1 paddle up using p1.Y and PADDLE_SPEED
-            }
+            if (wKeyDown == true && p1Y > 0) { p1Y -= PADDLE_SPEED; }
+            if (sKeyDown == true && p1Y < this.Height - pHeight) { p1Y += PADDLE_SPEED; }
 
-            // TODO create an if statement and code to move player 1 paddle down using p1.Y and PADDLE_SPEED
-
-            // TODO create an if statement and code to move player 2 paddle up using p2.Y and PADDLE_SPEED
-
-            // TODO create an if statement and code to move player 2 paddle down using p2.Y and PADDLE_SPEED
+            if (upKeyDown == true && p2Y > 0) { p2Y -= PADDLE_SPEED; }
+            if (downKeyDown == true && p2Y < this.Height - pHeight) { p2Y += PADDLE_SPEED; }
 
             #endregion
 
             #region ball collision with top and bottom lines
 
-            if (ballY < 0) // if ball hits top line
-            {
-                // TODO use ballMoveDown boolean to change direction
-                // TODO play a collision sound
+            if (ballY < 0) 
+            { 
+                ballMoveDown = true;
+                collisionSound.Play();
             }
-            // TODO In an else if statement use ball.Y, this.Height, and ball.Width to check for collision with bottom line
-            // If true use ballMoveDown down boolean to change direction
+            if (ballY > this.Height - ballSize) 
+            { 
+                ballMoveDown = false;
+                collisionSound.Play();
+            }
 
             #endregion
 
             #region ball collision with paddles
 
-            // TODO create if statment that checks p1 collides with ball and if it does
-                 // --- play a "paddle hit" sound and
-                 // --- use ballMoveRight boolean to change direction
+            Rectangle p1rectangle = new Rectangle(p1X, p1Y, pWidth, pHeight);
+            Rectangle p2rectangle = new Rectangle(p2X, p2Y, pWidth, pHeight);
+            Rectangle ballrectangle = new Rectangle(ballX, ballY, ballSize, ballSize);
+          
+            if (p1rectangle.IntersectsWith(ballrectangle) || p2rectangle.IntersectsWith(ballrectangle))
+            {
+                ballMoveRight = !ballMoveRight;
+                collisionSound.Play();
+            }
 
-            // TODO create if statment that checks p2 collides with ball and if it does
-                // --- play a "paddle hit" sound and
-                // --- use ballMoveRight boolean to change direction
-            
             /*  ENRICHMENT
              *  Instead of using two if statments as noted above see if you can create one
              *  if statement with multiple conditions to play a sound and change direction
@@ -214,44 +225,76 @@ namespace Pong
                 // TODO
                 // --- play score sound
                 // --- update player 2 score
-
+                player2Score++;
+                scoreSound.Play();
                 // TODO use if statement to check to see if player 2 has won the game. If true run 
+                if (player2Score == gameWinScore) { GameOver("Player 2"); }
+                else 
+                { 
+                    ballMoveRight = true;
+                    SetParameters();
+                }
                 // GameOver method. Else change direction of ball and call SetParameters method.
-
             }
 
-            // TODO same as above but this time check for collision with the right wall
+            if (ballX > this.Width - ballSize)  // ball hits right wall logic
+            {
+                // TODO
+                // --- play score sound
+                // --- update player 1 score
+                player1Score++;
+                scoreSound.Play();
+                // TODO use if statement to check to see if player 2 has won the game. If true run 
+                if (player1Score == gameWinScore) { GameOver("Player 1"); }
+                else 
+                { 
+                    ballMoveRight = false;
+                    SetParameters();
+                }
+                // GameOver method. Else change direction of ball and call SetParameters method.
+            }
 
             #endregion
-            
+
             //refresh the screen, which causes the Form1_Paint method to run
             this.Refresh();
-        }
-        
+        }    
         /// <summary>
         /// Displays a message for the winner when the game is over and allows the user to either select
         /// to play again or end the program
         /// </summary>
         /// <param name="winner">The player name to be shown as the winner</param>
         private void GameOver(string winner)
-        {
-            newGameOk = true;
-
+        {            
             // TODO create game over logic
             // --- stop the gameUpdateLoop
             // --- show a message on the startLabel to indicate a winner, (need to Refresh).
             // --- pause for two seconds 
             // --- use the startLabel to ask the user if they want to play again
+            gameUpdateLoop.Enabled = false;
+            startLabel.Visible = true;
+            startLabel.Text = $"{winner} Wins";
+            Refresh();
+            Thread.Sleep(2000);          
+            startLabel.Text = $"Press Space to play again \n Press Escape to exit";
+            Refresh();
+            Thread.Sleep(1000);
+            newGameOk = true;
+
+
+
 
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             // TODO draw paddles using FillRectangle
-
+            e.Graphics.FillRectangle(drawBrush, p1X, p1Y, pWidth, pHeight);
+            e.Graphics.FillRectangle(drawBrush, p2X, p2Y, pWidth, pHeight);
             // TODO draw ball using FillRectangle
-
+            e.Graphics.FillRectangle(drawBrush, ballX, ballY, ballSize, ballSize);
             // TODO draw scores to the screen using DrawString
+            e.Graphics.DrawString($"{player1Score} - {player2Score}", drawFont, drawBrush, this.Width / 2 - 15, 3);
         }
 
     }
