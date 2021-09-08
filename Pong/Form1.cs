@@ -63,7 +63,6 @@ namespace Pong
             InitializeComponent();
         }
 
-        // -- YOU DO NOT NEED TO MAKE CHANGES TO THIS METHOD
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             //check to see if a key is pressed and set is KeyDown value to true if it has
@@ -88,15 +87,11 @@ namespace Pong
                     }
                     break;
                 case Keys.Escape:
-                    if (newGameOk)
-                    {
-                        Close();
-                    }
-                    break;
+                    Close();
+                    break;                   
             }
         }
 
-        // -- YOU DO NOT NEED TO MAKE CHANGES TO THIS METHOD
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
             //check to see if a key has been released and set its KeyDown value to false if it has
@@ -263,7 +258,6 @@ namespace Pong
         /// Displays a message for the winner when the game is over and allows the user to either select
         /// to play again or end the program
         /// </summary>
-        /// <param name="winner">The player name to be shown as the winner</param>
         private void GameOver(string winner)
         {            
             // TODO create game over logic
